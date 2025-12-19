@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Call Center Dashboard</title>
+<title>Call Center & Delivery Dashboard</title>
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
   h1 { text-align: center; }
@@ -13,34 +13,40 @@
   .green { background-color: #c6f6c6; }
   .yellow { background-color: #fff3c6; }
   .red { background-color: #f6c6c6; }
-  .dashboard { display: flex; justify-content: space-around; margin-bottom: 20px; }
-  .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 18%; text-align: center; }
+  .dashboard { display: flex; justify-content: space-around; margin-bottom: 20px; flex-wrap: wrap; }
+  .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 20%; text-align: center; margin-bottom: 10px; }
   .card h2 { margin: 10px 0; color: #007BFF; }
   input, select { padding: 5px; margin: 5px; }
   .form-container { margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+  button { padding: 7px 12px; margin: 5px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+  button:hover { background-color: #0056b3; }
 </style>
 </head>
 <body>
 
-<h1>Call Center & Orders Dashboard</h1>
+<h1>Call Center & Delivery Dashboard</h1>
 
 <!-- Dashboard -->
 <div class="dashboard">
   <div class="card">
-    <h3>Total Orders</h3>
-    <h2 id="totalOrders">0</h2>
+    <h3>Total Orders (CC)</h3>
+    <h2 id="totalOrdersCC">0</h2>
   </div>
   <div class="card">
-    <h3>Successful Orders</h3>
-    <h2 id="successfulOrders">0</h2>
+    <h3>Total Picked Up</h3>
+    <h2 id="totalPickedUp">0</h2>
   </div>
   <div class="card">
-    <h3>Cancelled Orders</h3>
-    <h2 id="cancelledOrders">0</h2>
+    <h3>Total Orders Delivered</h3>
+    <h2 id="totalDelivered">0</h2>
   </div>
   <div class="card">
-    <h3>Success Rate</h3>
-    <h2 id="successRate">0%</h2>
+    <h3>Delivery Success %</h3>
+    <h2 id="deliveryRate">0%</h2>
+  </div>
+  <div class="card">
+    <h3>Total Difference</h3>
+    <h2 id="totalDifference">0</h2>
   </div>
 </div>
 
@@ -60,11 +66,11 @@
       <option>Al Rigga</option>
     </select>
   </label>
-  <label>Orders Received: <input type="number" id="ordersReceived"></label>
-  <label>Successful Orders: <input type="number" id="successfulOrdersInput"></label>
-  <label>Cancelled Orders: <input type="number" id="cancelledOrdersInput"></label>
-  <label>Customer Calls: <input type="number" id="customerCalls"></label>
-  <label>Complaints: <input type="number" id="complaints"></label>
+  <label>Orders Received (CC): <input type="number" id="ordersReceived" min="0"></label>
+  <label>Picked Up (CC): <input type="number" id="pickedUp" min="0"></label>
+  <label>Cancelled (CC): <input type="number" id="cancelledCC" min="0"></label>
+  <label>Orders Delivered (DL): <input type="number" id="ordersDelivered" min="0"></label>
+  <label>Cancelled (DL): <input type="number" id="cancelledDL" min="0"></label>
   <button onclick="addRow()">Add Entry</button>
 </div>
 
@@ -93,16 +99,16 @@
     <tr>
       <th>Date</th>
       <th>Branch</th>
-      <th>Orders Received</th>
-      <th>Successful Orders</th>
-      <th>Cancelled Orders</th>
-      <th>Customer Calls</th>
-      <th>Complaints</th>
-      <th>Success Rate %</th>
+      <th>Orders Received (CC)</th>
+      <th>Picked Up (CC)</th>
+      <th>Cancelled (CC)</th>
+      <th>Orders Delivered (DL)</th>
+      <th>Cancelled (DL)</th>
+      <th>Delivery Success</th>
+      <th>Difference</th>
     </tr>
   </thead>
   <tbody>
-    <!-- Initial data can be inserted here -->
   </tbody>
 </table>
 
@@ -113,13 +119,13 @@ function addRow() {
   const date = document.getElementById('entryDate').value;
   const branch = document.getElementById('branchSelect').value;
   const ordersReceived = parseInt(document.getElementById('ordersReceived').value) || 0;
-  const successful = parseInt(document.getElementById('successfulOrdersInput').value) || 0;
-  const cancelled = parseInt(document.getElementById('cancelledOrdersInput').value) || 0;
-  const calls = parseInt(document.getElementById('customerCalls').value) || 0;
-  const complaints = parseInt(document.getElementById('complaints').value) || 0;
+  const pickedUp = parseInt(document.getElementById('pickedUp').value) || 0;
+  const cancelledCC = parseInt(document.getElementById('cancelledCC').value) || 0;
+  const delivered = parseInt(document.getElementById('ordersDelivered').value) || 0;
+  const cancelledDL = parseInt(document.getElementById('cancelledDL').value) || 0;
 
   const newRow = tableBody.insertRow();
-  [date, branch, ordersReceived, successful, cancelled, calls, complaints, ''].forEach((text, index) => {
+  [date, branch, ordersReceived, pickedUp, cancelledCC, delivered, cancelledDL, '', ''].forEach((text, index) => {
     const cell = newRow.insertCell();
     cell.innerText = text;
   });
@@ -127,29 +133,40 @@ function addRow() {
 }
 
 function updateTable() {
-  let totalOrders = 0, successfulOrders = 0, cancelledOrders = 0;
+  let totalCC = 0, totalPicked = 0, totalDelivered = 0, totalDiff = 0;
 
   for (let row of tableBody.rows) {
     const ordersReceived = parseInt(row.cells[2].innerText);
-    const successful = parseInt(row.cells[3].innerText);
-    const cancelled = parseInt(row.cells[4].innerText);
+    const pickedUp = parseInt(row.cells[3].innerText);
+    const cancelledCC = parseInt(row.cells[4].innerText);
+    const delivered = parseInt(row.cells[5].innerText);
+    const cancelledDL = parseInt(row.cells[6].innerText);
 
-    totalOrders += ordersReceived;
-    successfulOrders += successful;
-    cancelledOrders += cancelled;
+    const success = delivered;
+    const difference = ordersReceived - delivered;
 
-    const rate = ordersReceived > 0 ? Math.round((successful / ordersReceived) * 100) : 0;
-    row.cells[7].innerText = rate + '%';
-    row.cells[7].className = rate >= 90 ? 'green' : (rate >= 80 ? 'yellow' : 'red');
+    totalCC += ordersReceived;
+    totalPicked += pickedUp;
+    totalDelivered += delivered;
+    totalDiff += difference;
+
+    row.cells[7].innerText = success;
+    row.cells[8].innerText = difference;
+
+    // Coloring difference
+    if (difference === 0) row.cells[8].className = 'green';
+    else if (difference <= 2) row.cells[8].className = 'yellow';
+    else row.cells[8].className = 'red';
   }
 
-  document.getElementById('totalOrders').innerText = totalOrders;
-  document.getElementById('successfulOrders').innerText = successfulOrders;
-  document.getElementById('cancelledOrders').innerText = cancelledOrders;
-  const overallRate = totalOrders > 0 ? Math.round((successfulOrders / totalOrders) * 100) : 0;
-  const rateElem = document.getElementById('successRate');
-  rateElem.innerText = overallRate + '%';
-  rateElem.className = overallRate >= 90 ? 'green' : (overallRate >= 80 ? 'yellow' : 'red');
+  document.getElementById('totalOrdersCC').innerText = totalCC;
+  document.getElementById('totalPickedUp').innerText = totalPicked;
+  document.getElementById('totalDelivered').innerText = totalDelivered;
+  const deliveryRate = totalCC > 0 ? Math.round((totalDelivered / totalCC) * 100) : 0;
+  const rateElem = document.getElementById('deliveryRate');
+  rateElem.innerText = deliveryRate + '%';
+  rateElem.className = deliveryRate >= 90 ? 'green' : (deliveryRate >= 80 ? 'yellow' : 'red');
+  document.getElementById('totalDifference').innerText = totalDiff;
 }
 
 function applyFilter() {
@@ -165,7 +182,7 @@ function applyFilter() {
   }
 }
 
-// Initialize dashboard if table has preloaded rows
+// Initialize if table has preloaded rows
 updateTable();
 </script>
 
