@@ -14,7 +14,7 @@
   .yellow { background-color: #fff3c6; }
   .red { background-color: #f6c6c6; }
   .dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; }
-  .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 20%; text-align: center; margin-bottom: 10px; }
+  .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 18%; text-align: center; margin-bottom: 10px; }
   .card h2 { margin: 10px 0; color: #007BFF; }
   .form-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
   input, select { padding: 5px; margin: 5px; }
@@ -28,6 +28,7 @@
 
 <h1>Call Center & Delivery Dashboard</h1>
 
+<!-- Dashboard -->
 <div class="dashboard">
   <div class="card"><h3>Total Orders (CC)</h3><h2 id="totalOrdersCC">0</h2></div>
   <div class="card"><h3>Total Picked Up</h3><h2 id="totalPickedUp">0</h2></div>
@@ -36,6 +37,7 @@
   <div class="card"><h3>Total Difference</h3><h2 id="totalDifference">0</h2></div>
 </div>
 
+<!-- Data Input Form -->
 <div class="form-container">
   <h3>Add New Entry</h3>
   <label>Date: <input type="date" id="entryDate"></label>
@@ -54,12 +56,11 @@
   <label>Orders Received (CC): <input type="number" id="ordersReceived" min="0"></label>
   <label>Picked Up (CC): <input type="number" id="pickedUp" min="0"></label>
   <label>Cancelled (CC): <input type="number" id="cancelledCC" min="0"></label>
-  <label>Orders Delivered (DL): <input type="number" id="ordersDelivered" min="0"></label>
-  <label>Cancelled (DL): <input type="number" id="cancelledDL" min="0"></label>
   <button onclick="addRow()">Add Entry</button>
   <button onclick="printReport()">Print Report</button>
 </div>
 
+<!-- Filter -->
 <div class="form-container">
   <h3>Filter Table</h3>
   <label>Filter by Branch:
@@ -78,6 +79,7 @@
   <label>Filter by Date: <input type="date" id="filterDate" onchange="applyFilter()"></label>
 </div>
 
+<!-- Orders Table -->
 <table id="ordersTable">
   <thead>
     <tr>
@@ -87,8 +89,6 @@
       <th>Picked Up (CC)</th>
       <th>Cancelled (CC)</th>
       <th>Orders Delivered (DL)</th>
-      <th>Cancelled (DL)</th>
-      <th>Delivery Success</th>
       <th>Difference</th>
       <th>Actions</th>
     </tr>
@@ -114,10 +114,11 @@ function addRow() {
     branch: document.getElementById('branchSelect').value,
     ordersReceived: parseInt(document.getElementById('ordersReceived').value) || 0,
     pickedUp: parseInt(document.getElementById('pickedUp').value) || 0,
-    cancelledCC: parseInt(document.getElementById('cancelledCC').value) || 0,
-    delivered: parseInt(document.getElementById('ordersDelivered').value) || 0,
-    cancelledDL: parseInt(document.getElementById('cancelledDL').value) || 0
+    cancelledCC: parseInt(document.getElementById('cancelledCC').value) || 0
   };
+  // حساب Delivered تلقائياً
+  entry.delivered = entry.ordersReceived - entry.pickedUp - entry.cancelledCC;
+
   data.push(entry);
   saveData();
   clearInputs();
@@ -127,8 +128,6 @@ function clearInputs() {
   document.getElementById('ordersReceived').value = '';
   document.getElementById('pickedUp').value = '';
   document.getElementById('cancelledCC').value = '';
-  document.getElementById('ordersDelivered').value = '';
-  document.getElementById('cancelledDL').value = '';
   document.getElementById('entryDate').value = '';
 }
 
@@ -139,79 +138,71 @@ function editRow(index) {
   document.getElementById('ordersReceived').value = entry.ordersReceived;
   document.getElementById('pickedUp').value = entry.pickedUp;
   document.getElementById('cancelledCC').value = entry.cancelledCC;
-  document.getElementById('ordersDelivered').value = entry.delivered;
-  document.getElementById('cancelledDL').value = entry.cancelledDL;
 
-  // Remove the old row to replace on save
-  data.splice(index, 1);
+  data.splice(index, 1); // remove old row
   updateTable();
 }
 
 function deleteRow(index) {
   if(confirm("Are you sure you want to delete this entry?")){
-    data.splice(index, 1);
+    data.splice(index,1);
     saveData();
   }
 }
 
 function updateTable() {
   tableBody.innerHTML = '';
-  let totalCC = 0, totalPicked = 0, totalDelivered = 0, totalDiff = 0;
+  let totalCC=0, totalPicked=0, totalDelivered=0, totalDiff=0;
 
-  data.forEach((entry, index) => {
+  data.forEach((entry,index)=>{
     const row = tableBody.insertRow();
-    const diff = entry.ordersReceived - entry.delivered;
-    const success = entry.delivered;
+    const diff = entry.ordersReceived - entry.pickedUp - entry.cancelledCC - entry.delivered; // should be zero ideally
+    totalCC+=entry.ordersReceived;
+    totalPicked+=entry.pickedUp;
+    totalDelivered+=entry.delivered;
+    totalDiff+=diff;
 
     [entry.date, entry.branch, entry.ordersReceived, entry.pickedUp, entry.cancelledCC,
-      entry.delivered, entry.cancelledDL, success, diff
-    ].forEach((text, i) => {
-      const cell = row.insertCell();
-      cell.innerText = text;
-      if(i===8){ // difference coloring
-        if(diff===0) cell.className='green';
-        else if(diff<=2) cell.className='yellow';
-        else cell.className='red';
-      }
-    });
+     entry.delivered, diff].forEach((text,i)=>{
+       const cell=row.insertCell();
+       cell.innerText=text;
+       if(i===6){ // Difference coloring
+         if(diff===0) cell.className='green';
+         else if(diff<=2) cell.className='yellow';
+         else cell.className='red';
+       }
+     });
 
-    const actionCell = row.insertCell();
-    actionCell.innerHTML = `<button class="editBtn" onclick="editRow(${index})">Edit</button>
-                            <button class="deleteBtn" onclick="deleteRow(${index})">Delete</button>`;
-
-    totalCC += entry.ordersReceived;
-    totalPicked += entry.pickedUp;
-    totalDelivered += entry.delivered;
-    totalDiff += diff;
+    const actionCell=row.insertCell();
+    actionCell.innerHTML=`<button class="editBtn" onclick="editRow(${index})">Edit</button>
+                          <button class="deleteBtn" onclick="deleteRow(${index})">Delete</button>`;
   });
 
-  document.getElementById('totalOrdersCC').innerText = totalCC;
-  document.getElementById('totalPickedUp').innerText = totalPicked;
-  document.getElementById('totalDelivered').innerText = totalDelivered;
-  document.getElementById('totalDifference').innerText = totalDiff;
+  document.getElementById('totalOrdersCC').innerText=totalCC;
+  document.getElementById('totalPickedUp').innerText=totalPicked;
+  document.getElementById('totalDelivered').innerText=totalDelivered;
+  document.getElementById('totalDifference').innerText=totalDiff;
 
-  const deliveryRate = totalCC>0 ? Math.round((totalDelivered/totalCC)*100) : 0;
-  const rateElem = document.getElementById('deliveryRate');
-  rateElem.innerText = deliveryRate + '%';
-  rateElem.className = deliveryRate>=90?'green':(deliveryRate>=80?'yellow':'red');
+  const deliveryRate=totalCC>0 ? Math.round((totalDelivered/totalCC)*100) : 0;
+  const rateElem=document.getElementById('deliveryRate');
+  rateElem.innerText=deliveryRate+'%';
+  rateElem.className=deliveryRate>=90?'green':(deliveryRate>=80?'yellow':'red');
 }
 
 function applyFilter() {
-  const branchFilter = document.getElementById('filterBranch').value;
-  const dateFilter = document.getElementById('filterDate').value;
+  const branchFilter=document.getElementById('filterBranch').value;
+  const dateFilter=document.getElementById('filterDate').value;
 
-  for (let i=0; i<tableBody.rows.length; i++){
-    const row = tableBody.rows[i];
-    const branch = row.cells[1].innerText;
-    const date = row.cells[0].innerText;
-    row.style.display = ((branchFilter===''||branch===branchFilter) &&
-                         (dateFilter===''||date===dateFilter)) ? '' : 'none';
+  for(let i=0;i<tableBody.rows.length;i++){
+    const row=tableBody.rows[i];
+    const branch=row.cells[1].innerText;
+    const date=row.cells[0].innerText;
+    row.style.display=((branchFilter===''||branch===branchFilter)&&
+                       (dateFilter===''||date===dateFilter))?'':'none';
   }
 }
 
-function printReport(){
-  window.print();
-}
+function printReport(){ window.print(); }
 
 // Initialize
 updateTable();
