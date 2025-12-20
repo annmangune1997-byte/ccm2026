@@ -3,93 +3,127 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Call Center & Delivery Dashboard by Branch</title>
+<title>Call Center & Delivery Dashboard by Branch (Improved)</title>
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-h1, h2 { text-align: center; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-th { background-color: #007BFF; color: white; }
-.green { background-color: #c6f6c6; }
-.yellow { background-color: #fff3c6; }
-.red { background-color: #f6c6c6; }
-.dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; }
-.card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 18%; text-align: center; margin-bottom: 10px; }
-.card h2 { margin: 10px 0; color: #007BFF; }
-.form-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-input, select { padding: 5px; margin: 5px; }
-button { padding: 7px 12px; margin: 5px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 20px; background: #f0f2f5; }
+h1, h2 { text-align: center; color: #1c1e21; }
+
+/* Dashboard Cards */
+.dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 25px; }
+.card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); width: 18%; text-align: center; margin-bottom: 15px; transition: transform 0.2s; }
+.card:hover { transform: translateY(-5px); }
+.card i { font-size: 2em; margin-bottom: 10px; }
+.card h3 { margin: 0 0 10px 0; font-size: 0.9em; color: #606770; text-transform: uppercase; }
+.card h2 { margin: 0; font-size: 1.8em; color: #1c1e21; }
+
+/* Branch Sections */
+.branch-section { background: #fff; padding: 20px; margin-bottom: 25px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
+.branch-section h2 { border-bottom: 2px solid #007BFF; padding-bottom: 10px; margin-bottom: 20px; }
+
+/* Branch Summary Cards */
+.branch-summary { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; }
+.branch-summary .card { width: 23%; font-size: 0.9em; }
+.branch-summary .card h2 { font-size: 1.5em; }
+
+/* Form Container */
+.form-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+.form-container h3 { margin-top: 0; }
+input, select { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; width: calc(100% - 22px); box-sizing: border-box; }
+button { padding: 10px 15px; margin: 5px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
 button:hover { background-color: #0056b3; }
 .editBtn { background-color: #ffa500; }
-.deleteBtn { background-color: #ff4d4d; }
-.branch-section { background: #fff; padding: 10px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.deleteBtn { background-color: #dc3545; }
+.updateBtn { background-color: #28a745; }
+.cancelBtn { background-color: #6c757d; }
+
+/* Tables */
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: left; }
+th { background-color: #f8f9fa; color: #495057; font-weight: 600; cursor: pointer; user-select: none; }
+th:hover { background-color: #e9ecef; }
+th i { margin-left: 5px; }
+tbody tr:nth-child(even) { background-color: #f8f9fa; }
+tbody tr:hover { background-color: #e9ecef; }
+
+/* Status Colors and Icons */
+.green { color: #28a745; }
+.yellow { color: #ffc107; }
+.red { color: #dc3545; }
+.status-ok { color: #28a745; }
+.status-warning { color: #ffc107; }
+.status-bad { color: #dc3545; }
+
+/* Edit Mode Indicator */
+#editMode { display: none; background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
 </style>
 </head>
 <body>
 
 <h1>Call Center & Delivery Dashboard by Branch</h1>
 
-<!-- Dashboard -->
+<!-- Overall Dashboard -->
 <div class="dashboard">
-  <div class="card"><h3>Total Orders (CC)</h3><h2 id="totalOrdersCC">0</h2></div>
-  <div class="card"><h3>Total Picked Up</h3><h2 id="totalPickedUp">0</h2></div>
-  <div class="card"><h3>Total Orders Delivered</h3><h2 id="totalDelivered">0</h2></div>
-  <div class="card"><h3>Delivery Success %</h3><h2 id="deliveryRate">0%</h2></div>
-  <div class="card"><h3>Total Difference</h3><h2 id="totalDifference">0</h2></div>
+  <div class="card"><i class="fas fa-phone-volume"></i><h3>Total Orders (CC)</h3><h2 id="totalOrdersCC">0</h2></div>
+  <div class="card"><i class="fas fa-truck-pickup"></i><h3>Total Picked Up</h3><h2 id="totalPickedUp">0</h2></div>
+  <div class="card"><i class="fas fa-truck-fast"></i><h3>Total Orders Delivered</h3><h2 id="totalDelivered">0</h2></div>
+  <div class="card"><i class="fas fa-chart-line"></i><h3>Delivery Success %</h3><h2 id="deliveryRate">0%</h2></div>
+  <div class="card"><i class="fas fa-balance-scale"></i><h3>Total Difference</h3><h2 id="totalDifference">0</h2></div>
 </div>
 
 <!-- Data Input Form -->
 <div class="form-container">
-<h3>Add New Entry</h3>
-<label>Date: <input type="date" id="entryDate"></label>
-<label>Branch: 
-  <select id="branchSelect">
-    <option>Hamdan St</option>
-    <option>Al Khalidiyah</option>
-    <option>Shabiya 11</option>
-    <option>Muroor</option>
-    <option>Al Majaz</option>
-    <option>Al Barsha</option>
-    <option>Al Satwa</option>
-    <option>Al Rigga</option>
-  </select>
-</label>
-<label>Orders Received (CC): <input type="number" id="ordersReceived" min="0"></label>
-<label>Picked Up (CC): <input type="number" id="pickedUp" min="0"></label>
-<label>Cancelled (CC): <input type="number" id="cancelledCC" min="0"></label>
-<label>Orders Delivered (DL): <input type="number" id="ordersDelivered" min="0"></label>
-<button onclick="addRow()">Add Entry</button>
-<button onclick="printReport()">Print Report</button>
+  <div id="editMode">
+    <strong>Edit Mode:</strong> You are currently editing an entry. Make your changes and click "Update Entry" or "Cancel".
+  </div>
+  <h3 id="formTitle">Add New Entry</h3>
+  <label>Date: <input type="date" id="entryDate" required></label>
+  <label>Branch: 
+    <select id="branchSelect">
+      <option>Hamdan St</option><option>Al Khalidiyah</option><option>Shabiya 11</option><option>Muroor</option>
+      <option>Al Majaz</option><option>Al Barsha</option><option>Al Satwa</option><option>Al Rigga</option>
+    </select>
+  </label>
+  <label>Orders Received (CC): <input type="number" id="ordersReceived" min="0"></label>
+  <label>Picked Up (CC): <input type="number" id="pickedUp" min="0"></label>
+  <label>Cancelled (CC): <input type="number" id="cancelledCC" min="0"></label>
+  <label>Orders Delivered (DL): <input type="number" id="ordersDelivered" min="0"></label>
+  
+  <div>
+    <button id="addBtn" onclick="addRow()"><i class="fas fa-plus"></i> Add Entry</button>
+    <button id="updateBtn" class="updateBtn" onclick="updateRow()" style="display:none;"><i class="fas fa-save"></i> Update Entry</button>
+    <button id="cancelBtn" class="cancelBtn" onclick="cancelEdit()" style="display:none;"><i class="fas fa-times"></i> Cancel</button>
+    <button onclick="printReport()"><i class="fas fa-print"></i> Print Report</button>
+  </div>
 </div>
 
 <!-- Filter -->
 <div class="form-container">
-<h3>Filter Table</h3>
-<label>Filter by Branch:
-  <select id="filterBranch" onchange="applyFilter()">
-    <option value="">All</option>
-    <option>Hamdan St</option>
-    <option>Al Khalidiyah</option>
-    <option>Shabiya 11</option>
-    <option>Muroor</option>
-    <option>Al Majaz</option>
-    <option>Al Barsha</option>
-    <option>Al Satwa</option>
-    <option>Al Rigga</option>
-  </select>
-</label>
-<label>Filter by Date: <input type="date" id="filterDate" onchange="applyFilter()"></label>
+  <h3>Filter Data</h3>
+  <label>Filter by Branch:
+    <select id="filterBranch" onchange="applyFilter()">
+      <option value="">All</option>
+      <option>Hamdan St</option><option>Al Khalidiyah</option><option>Shabiya 11</option><option>Muroor</option>
+      <option>Al Majaz</option><option>Al Barsha</option><option>Al Satwa</option><option>Al Rigga</option>
+    </select>
+  </label>
+  <label>Start Date: <input type="date" id="filterStartDate" onchange="applyFilter()"></label>
+  <label>End Date: <input type="date" id="filterEndDate" onchange="applyFilter()"></label>
+  <button onclick="clearFilters()"><i class="fas fa-filter-circle-xmark"></i> Clear Filters</button>
 </div>
 
-<!-- Branch Sections -->
+<!-- Branch Sections with Tables -->
 <div id="branchTables"></div>
 
 <script>
-let branchTables = document.getElementById('branchTables');
-
-// Load data from LocalStorage
+let branchTablesDiv = document.getElementById('branchTables');
 let data = JSON.parse(localStorage.getItem('ccData')) || [];
+let editIndex = -1;
+let sortState = {}; // To keep track of sort direction for each table
 
+// --- Main Functions ---
 function saveData() {
   localStorage.setItem('ccData', JSON.stringify(data));
   updateDashboard();
@@ -97,131 +131,249 @@ function saveData() {
 }
 
 function addRow() {
-  const entry = {
-    date: document.getElementById('entryDate').value,
-    branch: document.getElementById('branchSelect').value,
-    ordersReceived: parseInt(document.getElementById('ordersReceived').value) || 0,
-    pickedUp: parseInt(document.getElementById('pickedUp').value) || 0,
-    cancelledCC: parseInt(document.getElementById('cancelledCC').value) || 0,
-    delivered: parseInt(document.getElementById('ordersDelivered').value) || 0
-  };
-  entry.difference = entry.delivered - (entry.ordersReceived - entry.pickedUp - entry.cancelledCC);
+  if (!validateForm()) return;
+  const entry = getFormData();
   data.push(entry);
   saveData();
   clearInputs();
 }
 
-function clearInputs() {
-  document.getElementById('ordersReceived').value = '';
-  document.getElementById('pickedUp').value = '';
-  document.getElementById('cancelledCC').value = '';
-  document.getElementById('ordersDelivered').value = '';
-  document.getElementById('entryDate').value = '';
-}
-
-// Dashboard update
-function updateDashboard(){
-  let totalCC=0,totalPicked=0,totalDelivered=0,totalDiff=0;
-  data.forEach(entry=>{
-    totalCC+=entry.ordersReceived;
-    totalPicked+=entry.pickedUp;
-    totalDelivered+=entry.delivered;
-    totalDiff+=entry.difference;
-  });
-  document.getElementById('totalOrdersCC').innerText=totalCC;
-  document.getElementById('totalPickedUp').innerText=totalPicked;
-  document.getElementById('totalDelivered').innerText=totalDelivered;
-  document.getElementById('totalDifference').innerText=totalDiff;
-  const deliveryRate=totalCC>0 ? Math.round((totalDelivered/totalCC)*100) : 0;
-  const rateElem=document.getElementById('deliveryRate');
-  rateElem.innerText=deliveryRate+'%';
-  rateElem.className=deliveryRate>=90?'green':(deliveryRate>=80?'yellow':'red');
-}
-
-// Render branch tables
-function renderBranchTables(){
-  branchTables.innerHTML='';
-  const branches=[...new Set(data.map(d=>d.branch))];
-  branches.forEach(branch=>{
-    const branchData=data.filter(d=>d.branch===branch);
-    const section=document.createElement('div');
-    section.className='branch-section';
-    section.innerHTML=`<h2>${branch}</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Orders Received (CC)</th>
-            <th>Picked Up (CC)</th>
-            <th>Cancelled (CC)</th>
-            <th>Orders Delivered (DL)</th>
-            <th>Difference</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-        ${branchData.map((entry,index)=>`<tr>
-          <td>${entry.date}</td>
-          <td>${entry.ordersReceived}</td>
-          <td>${entry.pickedUp}</td>
-          <td>${entry.cancelledCC}</td>
-          <td>${entry.delivered}</td>
-          <td class="${entry.difference===0?'green':Math.abs(entry.difference)<=2?'yellow':'red'}">${entry.difference}</td>
-          <td>
-            <button class="editBtn" onclick="editRow(${data.indexOf(entry)})">Edit</button>
-            <button class="deleteBtn" onclick="deleteRow(${data.indexOf(entry)})">Delete</button>
-          </td>
-        </tr>`).join('')}
-        </tbody>
-      </table>`;
-    branchTables.appendChild(section);
-  });
-}
-
-// Edit/Delete
-function editRow(index){
-  const entry=data[index];
-  document.getElementById('entryDate').value=entry.date;
-  document.getElementById('branchSelect').value=entry.branch;
-  document.getElementById('ordersReceived').value=entry.ordersReceived;
-  document.getElementById('pickedUp').value=entry.pickedUp;
-  document.getElementById('cancelledCC').value=entry.cancelledCC;
-  document.getElementById('ordersDelivered').value=entry.delivered;
-  data.splice(index,1);
+function updateRow() {
+  if (editIndex === -1 || !validateForm()) return;
+  data[editIndex] = getFormData();
   saveData();
+  cancelEdit();
 }
 
-function deleteRow(index){
-  if(confirm("Are you sure you want to delete this entry?")){
-    data.splice(index,1);
+function deleteRow(index) {
+  if (confirm("Are you sure you want to delete this entry? This action cannot be undone.")) {
+    data.splice(index, 1);
     saveData();
   }
 }
 
-// Filter
-function applyFilter(){
-  const branchFilter=document.getElementById('filterBranch').value;
-  const dateFilter=document.getElementById('filterDate').value;
-  branchTables.querySelectorAll('.branch-section').forEach(section=>{
-    const branchName=section.querySelector('h2').innerText;
-    const matchBranch=(branchFilter==='') || (branchName===branchFilter);
-    let showSection=false;
-    section.querySelectorAll('tbody tr').forEach(row=>{
-      const date=row.cells[0].innerText;
-      const matchDate=(dateFilter==='')||(date===dateFilter);
-      row.style.display=(matchBranch && matchDate)?'':'none';
-      if(row.style.display!=='none') showSection=true;
+function editRow(index) {
+  editIndex = index;
+  const entry = data[index];
+  document.getElementById('entryDate').value = entry.date;
+  document.getElementById('branchSelect').value = entry.branch;
+  document.getElementById('ordersReceived').value = entry.ordersReceived;
+  document.getElementById('pickedUp').value = entry.pickedUp;
+  document.getElementById('cancelledCC').value = entry.cancelledCC;
+  document.getElementById('ordersDelivered').value = entry.delivered;
+
+  // Show edit mode UI
+  document.getElementById('formTitle').innerText = 'Edit Entry';
+  document.getElementById('editMode').style.display = 'block';
+  document.getElementById('addBtn').style.display = 'none';
+  document.getElementById('updateBtn').style.display = 'inline-block';
+  document.getElementById('cancelBtn').style.display = 'inline-block';
+  window.scrollTo(0,0); // Scroll to top to see the form
+}
+
+function cancelEdit() {
+  editIndex = -1;
+  clearInputs();
+  document.getElementById('formTitle').innerText = 'Add New Entry';
+  document.getElementById('editMode').style.display = 'none';
+  document.getElementById('addBtn').style.display = 'inline-block';
+  document.getElementById('updateBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
+}
+
+function getFormData() {
+  const ordersReceived = parseInt(document.getElementById('ordersReceived').value) || 0;
+  const pickedUp = parseInt(document.getElementById('pickedUp').value) || 0;
+  const cancelledCC = parseInt(document.getElementById('cancelledCC').value) || 0;
+  const delivered = parseInt(document.getElementById('ordersDelivered').value) || 0;
+
+  return {
+    date: document.getElementById('entryDate').value,
+    branch: document.getElementById('branchSelect').value,
+    ordersReceived: ordersReceived,
+    pickedUp: pickedUp,
+    cancelledCC: cancelledCC,
+    delivered: delivered,
+    difference: delivered - (ordersReceived - pickedUp - cancelledCC)
+  };
+}
+
+function validateForm() {
+    if (!document.getElementById('entryDate').value) {
+        alert('Please select a date.');
+        return false;
+    }
+    return true;
+}
+
+function clearInputs() {
+  document.getElementById('entryDate').value = '';
+  document.getElementById('ordersReceived').value = '';
+  document.getElementById('pickedUp').value = '';
+  document.getElementById('cancelledCC').value = '';
+  document.getElementById('ordersDelivered').value = '';
+}
+
+// --- Rendering Functions ---
+function updateDashboard() {
+  let totalCC = 0, totalPicked = 0, totalDelivered = 0, totalDiff = 0;
+  data.forEach(entry => {
+    totalCC += entry.ordersReceived;
+    totalPicked += entry.pickedUp;
+    totalDelivered += entry.delivered;
+    totalDiff += entry.difference;
+  });
+  document.getElementById('totalOrdersCC').innerText = totalCC.toLocaleString();
+  document.getElementById('totalPickedUp').innerText = totalPicked.toLocaleString();
+  document.getElementById('totalDelivered').innerText = totalDelivered.toLocaleString();
+  document.getElementById('totalDifference').innerText = totalDiff.toLocaleString();
+
+  const deliveryRate = totalCC > 0 ? ((totalDelivered / totalCC) * 100) : 0;
+  const rateElem = document.getElementById('deliveryRate');
+  rateElem.innerText = deliveryRate.toFixed(1) + '%';
+  rateElem.className = deliveryRate >= 90 ? 'green' : (deliveryRate >= 80 ? 'yellow' : 'red');
+}
+
+function renderBranchTables() {
+  branchTablesDiv.innerHTML = '';
+  const branches = [...new Set(data.map(d => d.branch))].sort();
+
+  branches.forEach(branch => {
+    const branchData = data.filter(d => d.branch === branch);
+    const section = document.createElement('div');
+    section.className = 'branch-section';
+
+    // Calculate branch summary
+    let branchTotalCC = 0, branchTotalDelivered = 0, branchTotalDiff = 0;
+    branchData.forEach(entry => {
+      branchTotalCC += entry.ordersReceived;
+      branchTotalDelivered += entry.delivered;
+      branchTotalDiff += entry.difference;
     });
-    section.style.display=showSection? 'block':'none';
+    const branchDeliveryRate = branchTotalCC > 0 ? ((branchTotalDelivered / branchTotalCC) * 100) : 0;
+    const branchStatusClass = branchDeliveryRate >= 90 ? 'status-ok' : (branchDeliveryRate >= 80 ? 'status-warning' : 'status-bad');
+
+    section.innerHTML = `
+      <h2>${branch}</h2>
+      <div class="branch-summary">
+        <div class="card"><i class="fas fa-phone-volume"></i><h3>Orders</h3><h2>${branchTotalCC.toLocaleString()}</h2></div>
+        <div class="card"><i class="fas fa-truck-fast"></i><h3>Delivered</h3><h2>${branchTotalDelivered.toLocaleString()}</h2></div>
+        <div class="card"><i class="fas fa-chart-line"></i><h3>Success Rate</h3><h2 class="${branchStatusClass}">${branchDeliveryRate.toFixed(1)}%</h2></div>
+        <div class="card"><i class="fas fa-balance-scale"></i><h3>Difference</h3><h2 class="${branchTotalDiff >= 0 ? 'status-ok' : 'status-bad'}">${branchTotalDiff.toLocaleString()}</h2></div>
+      </div>
+      <div class="table-wrapper">
+        <table id="table-${branch.replace(/\s+/g, '-')}">
+          <thead>
+            <tr>
+              <th onclick="sortTable('${branch}', 'date')">Date <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable('${branch}', 'ordersReceived')">Orders (CC) <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable('${branch}', 'pickedUp')">Picked Up (CC) <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable('${branch}', 'cancelledCC')">Cancelled (CC) <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable('${branch}', 'delivered')">Delivered (DL) <i class="fas fa-sort"></i></th>
+              <th onclick="sortTable('${branch}', 'difference')">Difference <i class="fas fa-sort"></i></th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${branchData.map((entry, index) => {
+              const originalIndex = data.indexOf(entry);
+              const diffClass = entry.difference === 0 ? 'status-ok' : Math.abs(entry.difference) <= 2 ? 'status-warning' : 'status-bad';
+              const diffIcon = entry.difference === 0 ? 'fa-check-circle' : (entry.difference > 0 ? 'fa-arrow-up' : 'fa-arrow-down');
+              return `<tr>
+                <td>${entry.date}</td>
+                <td>${entry.ordersReceived.toLocaleString()}</td>
+                <td>${entry.pickedUp.toLocaleString()}</td>
+                <td>${entry.cancelledCC.toLocaleString()}</td>
+                <td>${entry.delivered.toLocaleString()}</td>
+                <td class="${diffClass}"><i class="fas ${diffIcon}"></i> ${entry.difference.toLocaleString()}</td>
+                <td>
+                  <button class="editBtn" onclick="editRow(${originalIndex})"><i class="fas fa-edit"></i> Edit</button>
+                  <button class="deleteBtn" onclick="deleteRow(${originalIndex})"><i class="fas fa-trash"></i> Delete</button>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    branchTablesDiv.appendChild(section);
+  });
+  applyFilter(); // Re-apply filter after re-rendering
+}
+
+// --- Sorting Function ---
+function sortTable(branch, column) {
+  const tableId = `table-${branch.replace(/\s+/g, '-')}`;
+  const table = document.getElementById(tableId);
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  // Determine sort direction
+  if (!sortState[branch]) sortState[branch] = {};
+  sortState[branch][column] = sortState[branch][column] === 'asc' ? 'desc' : 'asc';
+  const direction = sortState[branch][column];
+
+  // Sort rows
+  rows.sort((a, b) => {
+    let aVal, bVal;
+    switch (column) {
+      case 'date': aVal = a.cells[0].innerText; bVal = b.cells[0].innerText; break;
+      case 'ordersReceived': aVal = parseInt(a.cells[1].innerText); bVal = parseInt(b.cells[1].innerText); break;
+      case 'pickedUp': aVal = parseInt(a.cells[2].innerText); bVal = parseInt(b.cells[2].innerText); break;
+      case 'cancelledCC': aVal = parseInt(a.cells[3].innerText); bVal = parseInt(b.cells[3].innerText); break;
+      case 'delivered': aVal = parseInt(a.cells[4].innerText); bVal = parseInt(b.cells[4].innerText); break;
+      case 'difference': aVal = parseInt(a.cells[5].innerText.replace(/[^\d-]/g, '')); bVal = parseInt(b.cells[5].innerText.replace(/[^\d-]/g, '')); break;
+    }
+    if (direction === 'asc') {
+      return aVal > bVal ? 1 : -1;
+    } else {
+      return aVal < bVal ? 1 : -1;
+    }
+  });
+
+  // Re-append sorted rows to the table body
+  rows.forEach(row => tbody.appendChild(row));
+}
+
+// --- Filter Function ---
+function applyFilter() {
+  const branchFilter = document.getElementById('filterBranch').value;
+  const startDateFilter = document.getElementById('filterStartDate').value;
+  const endDateFilter = document.getElementById('filterEndDate').value;
+
+  document.querySelectorAll('.branch-section').forEach(section => {
+    const branchName = section.querySelector('h2').innerText;
+    const matchBranch = !branchFilter || branchName === branchFilter;
+    let showSection = false;
+
+    section.querySelectorAll('tbody tr').forEach(row => {
+      const date = row.cells[0].innerText;
+      const matchDate = (!startDateFilter || date >= startDateFilter) && (!endDateFilter || date <= endDateFilter);
+      row.style.display = (matchBranch && matchDate) ? '' : 'none';
+      if (row.style.display !== 'none') showSection = true;
+    });
+    section.style.display = showSection ? 'block' : 'none';
   });
 }
 
-// Print
-function printReport(){ window.print(); }
+function clearFilters() {
+  document.getElementById('filterBranch').value = '';
+  document.getElementById('filterStartDate').value = '';
+  document.getElementById('filterEndDate').value = '';
+  applyFilter();
+}
 
-// Initialize
-updateDashboard();
-renderBranchTables();
+// --- Print Function ---
+function printReport() {
+  window.print();
+}
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date as default for the input
+  document.getElementById('entryDate').valueAsDate = new Date();
+  updateDashboard();
+  renderBranchTables();
+});
 </script>
 
 </body>
